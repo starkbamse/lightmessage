@@ -2,11 +2,13 @@
   import svelteLogo from './assets/svelte.svg'
   import viteLogo from '/vite.svg'
   import Counter from './lib/Counter.svelte'
-    import Voice from './Voice.svelte';
+    import Voice from './Voice/Recorder/Voice.svelte';
+    import VoiceDecoder from './VoiceDecoder.svelte';
 </script>
 
 <main>
 <Voice/>
+<VoiceDecoder/>
 </main>
 
 <style>
