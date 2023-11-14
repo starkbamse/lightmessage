@@ -1,0 +1,21 @@
+.logo {
+    max-width: 24px;
+    height: auto;
+    fill:white;
+    filter: invert(1);
+}
+
+nav {
+    background-color: #9370DB;
+z-index: 1;
+position: relative;
+}
+
+a {
+    color:white;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+

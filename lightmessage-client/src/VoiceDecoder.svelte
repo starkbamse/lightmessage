@@ -2,56 +2,38 @@
 
 <script>
 import io from 'socket.io-client';
-async function startListening(){
+    import bufferToBlob from './Communications/Recorder/exporter';
 
+const concat = (buffer1, buffer2) => {
+  const tmp = new Uint8Array(buffer1.byteLength + buffer2.byteLength);
+
+  tmp.set(new Uint8Array(buffer1), 0);
+  tmp.set(new Uint8Array(buffer2), buffer1.byteLength);
+
+  return tmp.buffer;
+};
+
+
+async function startListening(){
 let socket = io('http://localhost:3001');
 console.log("Started listener")
-socket.on('send', (data)=>{
-    let wavfile=new Blob([data],{type:"audio/webm;codecs=opus"});
-    console.log(wavfile)
+let chunks=[]
+setInterval(async ()=>{
+  if(chunks.length<=1) return;
+  let chunk=chunks.shift()
+  audioBufferChunk = await audioContext.decodeAudioData(chunk);
+    source = audioContext.createBufferSource();
+  source.buffer = audioBufferChunk;
 
-    const audioUrl = URL.createObjectURL(wavfile);
-      const audio = new Audio(audioUrl);
-      audio.play();
+  source.connect(audioContext.destination);
+  source.start();
+})
+const audioContext = new AudioContext();
+  let source = null;
+let audioBufferChunk;
+socket.on('send', async (data)=>{
+  chunks.push(data)
 
-
-/*
-    let blob = dataURLtoBlob(dataUrl); // decode
-const blobUrl = URL.createObjectURL(blob);
-let audio = new Audio(blobUrl);
-audio.addEventListener('canplaythrough', (event) => {
-audio.play();
-});
-  // instantiate with onDecode callback that fires when OggOpusFile data is decoded
-  // @ts-ignore
-  const decoder = new OpusStreamDecoder({onDecode});
-
-  // Loop through your Opusdata callingdecode() multiple times. Pass a Uint8Array
-  try {
-    decoder.ready.then(() => {
-        console.log("decoding")
-
-        let result=decoder.decode(uint8)
-        console.log(result)
-});
-    console.log(decoder)
-  } catch(e) {
-    console.log(e)
-    decoder.ready.then(_ => decoder.free());
-  }
-
-  // free up the decoder's memory in WebAssembly (also resets decoder for reuse)
-  //decoder.ready.then(_ => decoder.free());
-
-  // after free() is called, you could reuse the decoder for another file
- // try { ... decoder.ready.then(_ => decoder.decode(UINT8_DATA_TO_DECODE) } ...
-
-
-  function onDecode({left, right, samplesDecoded, sampleRate}) {
-    console.log(`Decoded ${samplesDecoded} samples`);
-    // play back the left/right audio, write to a file, etc
-  }
-*/
 });
 };
 </script>

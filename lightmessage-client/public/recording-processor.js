@@ -36,36 +36,37 @@ class RecordingProcessor extends AudioWorkletProcessor {
       this.sampleSum = 0;
 
 
-      this.port.onmessage = (event) => {
+
+
+      this.port.onmessage = async (event) => {
         if (event.data.message === 'UPDATE_RECORDING_STATE') {
           this.isRecording = event.data.setRecording;
-        } else {
-            this.port.postMessage({
-                message: 'SHARE_RECORDING_BUFFER',
-                buffer: this._recordingBuffer,
-            });
-            this._recordingBuffer = new Array(this.numberOfChannels)
-            .fill(new Float32Array(this.maxRecordingFrames));
-            this.recordedFrames = 0;    
-        }
+        } 
       };
     }
   
     process(inputs, outputs, params) {
-      for (let input = 0; input < 1; input++) {
-        for (let channel = 0; channel < this.numberOfChannels; channel++) {
-          for (let sample = 0; sample < inputs[input][channel].length; sample++) {
-            const currentSample = inputs[input][channel][sample];
+          for (let sample = 0; sample < inputs[0][0].length; sample++) {
+            if(this.recordedFrames>=12800){
+              this.port.postMessage({
+                message: 'SHARE_RECORDING_BUFFER',
+                buffer: this._recordingBuffer,
+            });
+            this._recordingBuffer = new Array(this.numberOfChannels).fill(new Float32Array(this.maxRecordingFrames));;
+            this.recordedFrames = 0; 
+            }
+
+            const currentSample = inputs[0][0][sample];
   
             // Copy data to recording buffer.
             if (this.isRecording) {
-              this._recordingBuffer[channel][sample+this.recordedFrames] =
+              this._recordingBuffer[0][sample+this.recordedFrames] =
                   currentSample;
             }
 
           }
-        }
-      }
+        
+      
   
       const shouldPublish = this.framesSinceLastPublish >= this.publishInterval;
   

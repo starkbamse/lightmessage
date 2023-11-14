@@ -69,12 +69,7 @@ function _writeStringToArray(aString, targetArray, offset) {
     }
   }
   
-  /**
-     * [createWaveFileBlobFromAudioBuffer description]
-     * @param  {AudioBuffer} audioBuffer
-     * @param  {Boolean} as32BitFloat
-     * @return {Blob} Resulting binary blob.
-     */
+
   function _createWaveFileBlobFromAudioBuffer(audioBuffer, as32BitFloat) {
     // Encoding setup.
     const frameLength = audioBuffer.length;
@@ -118,9 +113,7 @@ function _writeStringToArray(aString, targetArray, offset) {
     // Write actual audio data starting at offset 44.
     _writeAudioBufferToArray(audioBuffer, waveFileData, 44, bitsPerSample);
   
-    return new Blob([waveFileData], {
-      type: 'audio/wave',
-    });
+    return waveFileData
   }
   
 

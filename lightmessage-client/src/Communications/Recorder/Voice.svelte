@@ -4,7 +4,6 @@
   import { init, send } from "../../websocket";
   import { createRecord, setupRecordingWorkletNode } from "./audio_worklet";
     import { onMount } from "svelte";
-
 async function startRecording(node) {
 
   node.port.postMessage({
@@ -15,9 +14,17 @@ async function startRecording(node) {
 async function stopRecording() {
 
 }
+async function mergeArrays(arrays) {
+        const flatNumberArray = arrays.reduce((acc, curr) => {
+          acc.push(...curr);
+          return acc;
+        }, []);
 
+        return new Uint8Array(flatNumberArray);
+      };
   async function setupRecorder() {
-    const context = new AudioContext({sampleRate:8000});
+
+    const context = new AudioContext({sampleRate:16000});
     if (context.state === "suspended") {
       await context.resume();
     }
@@ -38,7 +45,7 @@ async function stopRecording() {
     console.log(context.sampleRate)
 
     const recordingProperties = {
-      numberOfChannels: micSourceNode.channelCount,
+      numberOfChannels: 1,
       sampleRate: context.sampleRate,
       maxFrameCount: context.sampleRate * 300,
     };
@@ -58,8 +65,8 @@ async function stopRecording() {
           context.sampleRate,
           event.data.buffer
         );
+        let wavfile=new Blob([buffer],{type:"audio/ogg;codecs=opus"});
 
-        console.log(buffer)
         send("voice",buffer)
       }
       if (event.data.message === "UPDATE_RECORDING_LENGTH") {
@@ -71,11 +78,11 @@ async function stopRecording() {
     console.log(recordingNode)
     startRecording(recordingNode)
 
-    setInterval(() => {
+    /*setInterval(() => {
       recordingNode.port.postMessage({
         message: "GET_STATE",
       });
-    }, 1000);
+    },1000);*/
   }
 
 

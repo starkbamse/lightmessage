@@ -2,29 +2,25 @@
   import svelteLogo from './assets/svelte.svg'
   import viteLogo from '/vite.svg'
   import Counter from './lib/Counter.svelte'
-    import Voice from './Voice/Recorder/Voice.svelte';
+    import Voice from './Communications/Recorder/Voice.svelte';
     import VoiceDecoder from './VoiceDecoder.svelte';
-</script>
+    import Navbar from './components/Navbar.svelte';
 
+
+
+
+</script>
+<Navbar/>
 <main>
+  <!--
 <Voice/>
-<VoiceDecoder/>
+<VoiceDecoder/>-->
+
+<button class="btn btn-primary">Test</button>
 </main>
 
 <style>
-  .logo {
-    height: 6em;
-    padding: 1.5em;
-    will-change: filter;
-    transition: filter 300ms;
-  }
-  .logo:hover {
-    filter: drop-shadow(0 0 2em #646cffaa);
-  }
-  .logo.svelte:hover {
-    filter: drop-shadow(0 0 2em #ff3e00aa);
-  }
-  .read-the-docs {
-    color: #888;
-  }
+main {
+  font-family: "Inter", sans-serif;
+}
 </style>
