@@ -49,6 +49,40 @@ export class KyberService {
         return keys;
     }
 
+    passwordToKeyPair(password){
+        // IND-CPA keypair
+        const indcpakeys = this.indcpa.indcpaKeyGenWithPass(password);
+        const pk = indcpakeys[0];
+        const sk = indcpakeys[1];
+        // FO transform to make IND-CCA2
+        // get hash of pk
+        const buffer1 = Buffer.from(pk);
+        const hash1 = new SHA3(256);
+        hash1.update(buffer1);
+        let pkh = hash1.digest();
+        // read 32 random values (0-255) into a 32 byte array
+        const rnd = Buffer.alloc(KyberService.paramsSymBytes);
+        for (let i = 0; i < KyberService.paramsSymBytes; i++) {
+            rnd[i] = Utilities.secureRandom(256);
+        }
+        // concatenate to form IND-CCA2 private key: sk + pk + h(pk) + rnd
+        for (let i = 0; i < pk.length; i++) {
+            sk.push(pk[i]);
+        }
+        for (let i = 0; i < pkh.length; i++) {
+            sk.push(pkh[i]);
+        }
+        for (let i = 0; i < rnd.length; i++) {
+            sk.push(rnd[i]);
+        }
+        const keys = []; // 2
+        keys[0] = pk;
+        keys[1] = sk;
+        return keys;
+    }
+
+    
+
     /**
          * Encrypt 32 byte length data from the given
          * public key

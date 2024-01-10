@@ -1,7 +1,7 @@
 /**
  * Kyber Handshake
  */
-export class KyberHandshake {
+export class Kyber {
     constructor(kyberService) {
         this.kyberService = kyberService;
         const kyberKeys = this.kyberService.generateKyberKeys();
@@ -26,6 +26,10 @@ export class KyberHandshake {
     decryptc(m) {
         return this.kyberService.decryptc(m,this.privateKey);
     }        
+
+    passwordToKeyPair(password){
+        return this.kyberService.passwordToKeyPair(password)
+    }
 
     get publicKey() {
         return this._publicKey;

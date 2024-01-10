@@ -8,10 +8,6 @@ export class Indcpa {
         this.paramsK = paramsK;
         this.poly = new Poly(this.paramsK);
     }
-    /**
-     * Generates public and private keys for the CPA-secure public-key
-     * encryption scheme underlying Kyber.
-     */
     indcpaKeyGen() {
         // random bytes for seed
         const rnd = Buffer.alloc(KyberService.paramsSymBytes);
@@ -87,6 +83,78 @@ export class Indcpa {
         }
         return keys;
     }
+    indcpaKeyGenWithPass(password) {
+        // random bytes for seed
+        const rnd = password
+        // hash rnd with SHA3-512
+        const buffer1 = Buffer.from(rnd);
+        const hash1 = new SHA3(512);
+        hash1.update(buffer1);
+        const seed = hash1.digest();
+        const publicSeedBuf = seed.slice(0, KyberService.paramsSymBytes);
+        const noiseSeedBuf = seed.slice(KyberService.paramsSymBytes, (KyberService.paramsSymBytes * 2));
+        const publicSeed = [];
+        const noiseSeed = [];
+        for (const num of publicSeedBuf) {
+            publicSeed.push(num);
+        }
+        for (const num of noiseSeedBuf) {
+            noiseSeed.push(num);
+        }
+        // generate public matrix A (already in NTT form)
+        const a = this.generateMatrix(publicSeed, false);
+        const s = []; //this.paramsK
+        const e = []; // this.paramsK
+        for (let i = 0; i < this.paramsK; i++) {
+            s[i] = this.poly.getNoisePoly(noiseSeed, i, this.paramsK);
+            e[i] = this.poly.getNoisePoly(noiseSeed, (i + this.paramsK), this.paramsK);
+        }
+        for (let i = 0; i < this.paramsK; i++) {
+            s[i] = this.poly.ntt(s[i]);
+        }
+        for (let i = 0; i < this.paramsK; i++) {
+            e[i] = this.poly.ntt(e[i]);
+        }
+        for (let i = 0; i < this.paramsK; i++) {
+            s[i] = this.poly.polyReduce(s[i]);
+        }
+        const pk = []; // this.paramsK
+        for (let i = 0; i < this.paramsK; i++) {
+            pk[i] = this.poly.polyToMont(this.poly.polyVectorPointWiseAccMont(a[i], s));
+        }
+        for (let i = 0; i < this.paramsK; i++) {
+            pk[i] = this.poly.polyAdd(pk[i], e[i]);
+        }
+        for (let i = 0; i < this.paramsK; i++) {
+            pk[i] = this.poly.polyReduce(pk[i]);
+        }
+        // ENCODE KEYS
+        const keys = []; // 2
+        // PUBLIC KEY
+        // turn polynomials into byte arrays
+        keys[0] = [];
+        let bytes = [];
+        for (let i = 0; i < this.paramsK; i++) {
+            bytes = this.poly.polyToBytes(pk[i]);
+            for (let j = 0; j < bytes.length; j++) {
+                keys[0].push(bytes[j]);
+            }
+        }
+        // append public seed
+        for (let i = 0; i < publicSeed.length; i++) {
+            keys[0].push(publicSeed[i]);
+        }
+        // PRIVATE KEY
+        keys[1] = [];
+        bytes = [];
+        for (let i = 0; i < this.paramsK; i++) {
+            bytes = this.poly.polyToBytes(s[i]);
+            for (let j = 0; j < bytes.length; j++) {
+                keys[1].push(bytes[j]);
+            }
+        }
+        return keys;
+    }    
     /**
      * Encrypt the given message using the Kyber public-key encryption scheme
      *

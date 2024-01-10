@@ -1,4 +1,4 @@
-import {Kyber1024Handshake, Kyber512Handshake, Kyber768Handshake} from "../kyber/index";
+import {Kyber768} from "../kyber/index";
 
 
 export default function Kyber() {
@@ -31,7 +31,14 @@ export default function Kyber() {
         }
         return string;
     }
-    
+    function hexToBytes(hex) {
+        let bytes = [];
+        for (let i = 0; i < hex.length; i += 2) {
+            bytes.push(parseInt(hex.substring(i, i + 2), 16));
+        }
+        console.log(bytes)
+        return bytes;
+    }
     async function tryKyber() {
         console.log("Trying kyber")
         let input=splitStringIntoUint8Arrays("Hello world. How are you, today?, I am feeling prettyy good. The encryption is working very well and I am thinking of publishing this live");
@@ -40,9 +47,19 @@ export default function Kyber() {
     * Generate 2 key agreements, one for Bob and one for Alice
     */
     const bobHandshake = new Kyber768Handshake();
+    let test1=bobHandshake.passwordToKeyPair(hexToBytes("07123e1f482356c415f684407a3b8723e10b2cbbc0b8fcd6282c49d37c9c1abc"))
+    let test2=bobHandshake.passwordToKeyPair(hexToBytes("07123e1f482356c415f684407a3b8723e10b2cbbc0b8fcd6282c49d37c9c1abc"))
+
+
+
+
+    console.log(test1)
+    console.log(test2)
     const aliceHandshake = new Kyber768Handshake();
     let messages=[]
     let start=Date.now()
+    console.log("publickey")
+    console.log(bobHandshake.publicKey)
     for(let i=0;i<input.length;i++){
         let encrypted_msg=bobHandshake.encryptc(aliceHandshake.publicKey,input[i])
         messages.push(encrypted_msg)
